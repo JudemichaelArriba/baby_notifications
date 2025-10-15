@@ -3,7 +3,7 @@ from firebase_admin import credentials, db, messaging
 from datetime import datetime, timedelta
 
 
-cred = credentials.Certificate("mybabyvax-3d5cc-firebase-adminsdk-fbsvc-48e1eb01cf.json")
+cred = credentials.Certificate("FIREBASE_KEY")
 firebase_admin.initialize_app(cred, {
     "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"  # replace with your DB URL
 })
