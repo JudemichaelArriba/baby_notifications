@@ -1,0 +1,30 @@
+name: Baby Vaccine Notification
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Runs every day at 8 AM UTC
+  workflow_dispatch:     # allows manual trigger
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install firebase-admin requests
+
+      - name: Run notifications
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_KEY }}
+        run: |
+          echo "${{ secrets.FIREBASE_KEY }}" > serviceAccountKey.json
+          python send_notifications.py
