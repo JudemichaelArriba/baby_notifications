@@ -1,8 +1,8 @@
+import os
+import json
 import firebase_admin
 from firebase_admin import credentials, db, messaging
 from datetime import datetime, timedelta
-
-
 # Get your secret JSON string from environment variable
 firebase_json = os.environ.get("FIREBASE_KEY")
 if not firebase_json:
