@@ -3,11 +3,19 @@ from firebase_admin import credentials, db, messaging
 from datetime import datetime, timedelta
 
 
-cred = credentials.Certificate("FIREBASE_KEY")
+# Get your secret JSON string from environment variable
+firebase_json = os.environ.get("FIREBASE_KEY")
+if not firebase_json:
+    raise Exception("FIREBASE_KEY not found in environment variables")
+
+# Convert the JSON string to a Python dict
+cred_dict = json.loads(firebase_json)
+
+# Initialize Firebase app
+cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"  # replace with your DB URL
 })
-
 
 def send_fcm(token, title, body):
     message = messaging.Message(
