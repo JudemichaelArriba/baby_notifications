@@ -3,18 +3,16 @@ import json
 import firebase_admin
 from firebase_admin import credentials, db, messaging
 from datetime import datetime, timedelta
-# Get your secret JSON string from environment variable
+
 firebase_json = os.environ.get("FIREBASE_KEY")
 if not firebase_json:
     raise Exception("FIREBASE_KEY not found in environment variables")
 
-# Convert the JSON string to a Python dict
 cred_dict = json.loads(firebase_json)
 
-# Initialize Firebase app
 cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
-    "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"  # replace with your DB URL
+    "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"
 })
 
 def send_fcm(token, title, body):
@@ -27,7 +25,6 @@ def send_fcm(token, title, body):
     )
     response = messaging.send(message)
     print("Sent notification:", response)
-
 
 def check_schedules():
     today = datetime.now().date()
@@ -51,23 +48,22 @@ def check_schedules():
                     dose_date = datetime.strptime(dose_date_str, "%Y-%m-%d").date()
                     days_left = (dose_date - today).days
 
-                 
-                    print(f"User: {uid}, Baby: {baby.get('fullName')}, "
-                          f"Dose: {dose.get('doseName')}, Date: {dose_date_str}, "
-                          f"Days left: {days_left}")
+                    print(f"User: {uid}, Baby: {baby.get('fullName')}, Dose: {dose.get('doseName')}, Date: {dose_date_str}, Days left: {days_left}")
 
-                  
-                    if days_left == 0: 
+                    if days_left == 3:
                         title = f"Upcoming Vaccine for {baby.get('fullName')}"
-                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} on {dose_date_str}"
-                        
-                    
-                        fcm_token = user.get("fcmToken")
-                        if fcm_token:
-                            send_fcm(fcm_token, title, body)
-                        else:
-                            print(f"No FCM token for user {uid}, would send: {title} - {body}")
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 3 days on {dose_date_str}"
+                    elif days_left == 0:
+                        title = f"Vaccine Scheduled Today for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled today ({dose_date_str})"
+                    else:
+                        continue
 
+                    fcm_token = user.get("fcmToken")
+                    if fcm_token:
+                        send_fcm(fcm_token, title, body)
+                    else:
+                        print(f"No FCM token for user {uid}, would send: {title} - {body}")
 
 if __name__ == "__main__":
     check_schedules()
