@@ -2,8 +2,8 @@ name: Send Baby Vaccine Notifications
 
 on:
   schedule:
-     - cron: '25 1 * * *'  # runs every day at 9:25 AM Philippine time
-  workflow_dispatch: 
+    - cron: '28 1 * * *' # Runs at 1:28 AM UTC (9:28 AM PH time)
+  workflow_dispatch: # Allows manual run
 
 jobs:
   send_notifications:
