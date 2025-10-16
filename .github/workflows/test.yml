@@ -2,10 +2,15 @@ name: Test Workflow
 
 on:
   workflow_dispatch:   # allows manual trigger
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes UTC
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Say Hello
-        run: echo "GitHub Actions is working!"
+        run: |
+          echo "GitHub Actions is working!"
+          echo "UTC time: $(date -u)"
+          echo "PH time (UTC+8): $(date -u -d '+8 hours')"
