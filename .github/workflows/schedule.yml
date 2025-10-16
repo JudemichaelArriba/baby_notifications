@@ -2,7 +2,7 @@ name: Send Baby Vaccine Notifications
 
 on:
   schedule:
-     - cron: '*/5 * * * *' # Runs at 1:37 AM UTC (9:37 AM PH time)
+    - cron: '*/5 * * * *' # Runs every 5 minutes UTC
   workflow_dispatch: # Allows manual run
 
 jobs:
@@ -23,6 +23,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install firebase-admin
+
+      - name: Debug - Print PH date/time
+        run: |
+          echo "Workflow triggered!"
+          echo "UTC time: $(date -u)"
+          echo "PH time (UTC+8): $(date -u -d '+8 hours')"
 
       - name: List files (debug)
         run: ls -R
