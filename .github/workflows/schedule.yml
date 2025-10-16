@@ -2,7 +2,7 @@ name: Send Baby Vaccine Notifications
 
 on:
   schedule:
-    - cron: '0 9 * * *' # runs every day at 9:00 AM UTC
+     - cron: '15 1 * * *' # runs every day at 9:00 AM UTC
   workflow_dispatch: # allows manual run
 
 jobs:
