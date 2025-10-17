@@ -1,10 +1,9 @@
 name: Send Baby Vaccine Notifications
 
 on:
- workflow_dispatch: 
   schedule:
-    - cron: '*/1 * * * *'  # every minute UTC
- 
+    - cron: '*/1* * * *' # every 5 minutes UTC
+  workflow_dispatch: 
 
 jobs:
   send_notifications:
