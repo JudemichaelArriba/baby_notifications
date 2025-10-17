@@ -2,7 +2,7 @@ name: Send Baby Vaccine Notifications
 
 on:
   schedule:
-    - cron: '*/1 * * * *' # every 5 minutes UTC
+    - cron: '*/5 * * * *' # every 5 minutes UTC
   workflow_dispatch: 
 
 jobs:
@@ -32,6 +32,17 @@ jobs:
 
       - name: List files (debug)
         run: ls -R
+
+      - name: Check FIREBASE_KEY
+        run: |
+          if [ -z "$FIREBASE_KEY" ]; then
+            echo "ERROR: FIREBASE_KEY is missing!"
+            exit 1
+          else
+            echo "FIREBASE_KEY exists"
+          fi
+        env:
+          FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
 
       - name: Run notifications
         env:
