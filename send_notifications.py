@@ -1,9 +1,11 @@
 import os
 import json
+import pytz
 import firebase_admin
 from firebase_admin import credentials, db, messaging
 from datetime import datetime
-import pytz
+
+PH_TZ = pytz.timezone("Asia/Manila")
 
 firebase_json = os.environ.get("FIREBASE_KEY")
 if not firebase_json:
@@ -14,8 +16,6 @@ cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"
 })
-
-PH_TZ = pytz.timezone("Asia/Manila")
 
 def send_fcm(token, title, body):
     message = messaging.Message(
@@ -41,6 +41,7 @@ def check_schedules():
         if not user.get("notifications_enabled", True):
             print(f"User {uid} ignored (notifications disabled).")
             continue
+
         babies = user.get("babies", {})
         for baby_id, baby in babies.items():
             schedules = baby.get("schedules", {})
@@ -50,9 +51,13 @@ def check_schedules():
                     dose_date_str = dose.get("date")
                     if not dose_date_str:
                         continue
+
+                    # Convert dose date to PH timezone
                     dose_date = datetime.strptime(dose_date_str, "%Y-%m-%d").date()
                     days_left = (dose_date - today).days
+
                     print(f"User: {uid}, Baby: {baby.get('fullName')}, Dose: {dose.get('doseName')}, Date: {dose_date_str}, Days left: {days_left}")
+
                     if days_left == 3:
                         title = f"Upcoming Vaccine for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 3 days on {dose_date_str}"
@@ -61,6 +66,7 @@ def check_schedules():
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled today ({dose_date_str})"
                     else:
                         continue
+
                     fcm_token = user.get("fcmToken")
                     if fcm_token:
                         send_fcm(fcm_token, title, body)
