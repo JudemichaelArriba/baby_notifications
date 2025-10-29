@@ -2,14 +2,13 @@ import os
 import json
 import firebase_admin
 from firebase_admin import credentials, db, messaging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 firebase_json = os.environ.get("FIREBASE_KEY")
 if not firebase_json:
     raise Exception("FIREBASE_KEY not found in environment variables")
 
 cred_dict = json.loads(firebase_json)
-
 cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"
@@ -36,6 +35,9 @@ def check_schedules():
         return
 
     for uid, user in users.items():
+        if not user.get("notifications_enabled", True):
+            print(f"User {uid} ignored (notifications disabled).")
+            continue
         babies = user.get("babies", {})
         for baby_id, baby in babies.items():
             schedules = baby.get("schedules", {})
@@ -47,18 +49,15 @@ def check_schedules():
                         continue
                     dose_date = datetime.strptime(dose_date_str, "%Y-%m-%d").date()
                     days_left = (dose_date - today).days
-
                     print(f"User: {uid}, Baby: {baby.get('fullName')}, Dose: {dose.get('doseName')}, Date: {dose_date_str}, Days left: {days_left}")
-
                     if days_left == 3:
                         title = f"Upcoming Vaccine for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 3 days on {dose_date_str}"
-                    elif days_left == 1:
+                    elif days_left == 0:
                         title = f"Vaccine Scheduled Today for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled today ({dose_date_str})"
                     else:
                         continue
-
                     fcm_token = user.get("fcmToken")
                     if fcm_token:
                         send_fcm(fcm_token, title, body)
