@@ -3,6 +3,7 @@ import json
 import firebase_admin
 from firebase_admin import credentials, db, messaging
 from datetime import datetime
+import pytz
 
 firebase_json = os.environ.get("FIREBASE_KEY")
 if not firebase_json:
@@ -13,6 +14,8 @@ cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"
 })
+
+PH_TZ = pytz.timezone("Asia/Manila")
 
 def send_fcm(token, title, body):
     message = messaging.Message(
@@ -26,7 +29,7 @@ def send_fcm(token, title, body):
     print("Sent notification:", response)
 
 def check_schedules():
-    today = datetime.now().date()
+    today = datetime.now(PH_TZ).date()
     users_ref = db.reference("users")
     users = users_ref.get()
 
