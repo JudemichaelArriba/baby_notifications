@@ -53,7 +53,7 @@ def check_schedules():
                     if days_left == 3:
                         title = f"Upcoming Vaccine for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 3 days on {dose_date_str}"
-                    elif days_left == 0:
+                    elif days_left == 1:
                         title = f"Vaccine Scheduled Today for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled today ({dose_date_str})"
                     else:
