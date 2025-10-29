@@ -48,20 +48,35 @@ def check_schedules():
             for vaccine_name, vaccine in schedules.items():
                 doses = vaccine.get("doses", [])
                 for dose in doses:
+                    if dose.get("completed") or not dose.get("visible", True):
+                        print(f"User {uid}, Baby {baby.get('fullName')}, Dose {dose.get('doseName')} ignored (completed or hidden).")
+                        continue
+
                     dose_date_str = dose.get("date")
                     if not dose_date_str:
                         continue
 
-                    # Convert dose date to PH timezone
                     dose_date = datetime.strptime(dose_date_str, "%Y-%m-%d").date()
                     days_left = (dose_date - today).days
 
                     print(f"User: {uid}, Baby: {baby.get('fullName')}, Dose: {dose.get('doseName')}, Date: {dose_date_str}, Days left: {days_left}")
 
-                    if days_left == 3:
+                    title = None
+                    body = None
+
+                    if days_left == 7:
+                        title = f"Vaccine Reminder for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 1 week on {dose_date_str}"
+                    elif days_left == 3:
                         title = f"Upcoming Vaccine for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 3 days on {dose_date_str}"
+                    elif days_left == 2:
+                        title = f"Upcoming Vaccine for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 2 days on {dose_date_str}"
                     elif days_left == 1:
+                        title = f"Vaccine Scheduled Tomorrow for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled tomorrow ({dose_date_str})"
+                    elif days_left == 0:
                         title = f"Vaccine Scheduled Today for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled today ({dose_date_str})"
                     else:
