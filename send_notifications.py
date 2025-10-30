@@ -1,15 +1,17 @@
 import os
 import json
+import pytz
 import firebase_admin
 from firebase_admin import credentials, db, messaging
-from datetime import datetime, timedelta
+from datetime import datetime
+
+PH_TZ = pytz.timezone("Asia/Manila")
 
 firebase_json = os.environ.get("FIREBASE_KEY")
 if not firebase_json:
     raise Exception("FIREBASE_KEY not found in environment variables")
 
 cred_dict = json.loads(firebase_json)
-
 cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     "databaseURL": "https://mybabyvax-3d5cc-default-rtdb.firebaseio.com/"
@@ -27,7 +29,7 @@ def send_fcm(token, title, body):
     print("Sent notification:", response)
 
 def check_schedules():
-    today = datetime.now().date()
+    today = datetime.now(PH_TZ).date()
     users_ref = db.reference("users")
     users = users_ref.get()
 
@@ -36,23 +38,44 @@ def check_schedules():
         return
 
     for uid, user in users.items():
+        if not user.get("notifications_enabled", True):
+            print(f"User {uid} ignored (notifications disabled).")
+            continue
+
         babies = user.get("babies", {})
         for baby_id, baby in babies.items():
             schedules = baby.get("schedules", {})
             for vaccine_name, vaccine in schedules.items():
                 doses = vaccine.get("doses", [])
                 for dose in doses:
+                    if dose.get("completed") or not dose.get("visible", True):
+                        print(f"User {uid}, Baby {baby.get('fullName')}, Dose {dose.get('doseName')} ignored (completed or hidden).")
+                        continue
+
                     dose_date_str = dose.get("date")
                     if not dose_date_str:
                         continue
+
                     dose_date = datetime.strptime(dose_date_str, "%Y-%m-%d").date()
                     days_left = (dose_date - today).days
 
                     print(f"User: {uid}, Baby: {baby.get('fullName')}, Dose: {dose.get('doseName')}, Date: {dose_date_str}, Days left: {days_left}")
 
-                    if days_left == 3:
+                    title = None
+                    body = None
+
+                    if days_left == 7:
+                        title = f"Vaccine Reminder for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 1 week on {dose_date_str}"
+                    elif days_left == 3:
                         title = f"Upcoming Vaccine for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 3 days on {dose_date_str}"
+                    elif days_left == 2:
+                        title = f"Upcoming Vaccine for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled in 2 days on {dose_date_str}"
+                    elif days_left == 1:
+                        title = f"Vaccine Scheduled Tomorrow for {baby.get('fullName')}"
+                        body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled tomorrow ({dose_date_str})"
                     elif days_left == 0:
                         title = f"Vaccine Scheduled Today for {baby.get('fullName')}"
                         body = f"{dose.get('doseName')} of {vaccine.get('vaccineName')} is scheduled today ({dose_date_str})"
