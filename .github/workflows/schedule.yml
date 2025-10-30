@@ -22,6 +22,7 @@ jobs:
         run: |
               python3 -m pip install --upgrade pip
               python3 -m pip install pytz firebase-admin
+              python3 baby_notifications/send_notifications.py
 
       - name: Debug - Print PH date/time
         run: |
@@ -46,4 +47,4 @@ jobs:
       - name: Run notifications
         env:
           FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
-        run: python3 baby_notifications/send_notifications.py
+     
