@@ -46,4 +46,4 @@ jobs:
       - name: Run notifications
         env:
           FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
-        run: python send_notifications.py
+        run: python3 baby_notifications/send_notifications.py
