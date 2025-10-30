@@ -18,11 +18,10 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Install dependencies directly
+      - name: Install dependencies
         run: |
-              python3 -m pip install --upgrade pip
-              python3 -m pip install pytz firebase-admin
-              python3 baby_notifications/send_notifications.py
+            python -m pip install --upgrade pip
+            pip install -r baby_notifications/requirements.txt
 
       - name: Debug - Print PH date/time
         run: |
@@ -47,4 +46,4 @@ jobs:
       - name: Run notifications
         env:
           FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
-     
+        run: python send_notifications.py
